@@ -1,21 +1,30 @@
 /* Base Application Styles */
-body {
-  color: #fff;
-  background: #222;
-}
-
-.index img {
-  margin: 40px auto;
-  border-radius: 4px;
-  background: #fff;
+img {
+  box-sizing: border-box;
+  height: auto;
+  width: 40px;
   display: block;
 }
 
-.index .notice {
-  margin: 20px auto;
-  padding: 15px 0;
+.red {
+  border: 1px solid red;
+}
+
+.yellow {
+  border: 1px solid yellow;
+}
+
+table {
+  border-collapse: collapse;
+  border: 10px solid black;
+}
+
+td {
+  padding: 0;
+}
+
+body {
   text-align: center;
-  border: 1px solid #000;
-  border-width: 1px 0;
-  background: #666;
+  width: 600px;
+  margin: auto;
 }

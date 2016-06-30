@@ -30,12 +30,8 @@ module.exports = {
   resolve: {
     extensions: ['', '.js', '.jsx'],
     alias: {
-      actions: `${defaultSettings.srcPath}/actions/`,
       components: `${defaultSettings.srcPath}/components/`,
-      sources: `${defaultSettings.srcPath}/sources/`,
-      stores: `${defaultSettings.srcPath}/stores/`,
-      styles: `${defaultSettings.srcPath}/styles/`,
-      config: `${defaultSettings.srcPath}/config/` + process.env.REACT_WEBPACK_ENV
+      styles: `${defaultSettings.srcPath}/styles/`
     }
   },
   externals: {
@@ -45,7 +41,8 @@ module.exports = {
       'skygear': {
         'endPoint': 'https://taktest.staging.skygeario.com/',
         'apiKey': 'c55ad35e6d644e559e139723817dcb85'
-      }
+      },
+      'GRID_SIZE': 15
     }) // it's better to save configuration for your skygear container here
   },
   module: {}
