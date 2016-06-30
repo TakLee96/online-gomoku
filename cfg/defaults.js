@@ -25,6 +25,14 @@ function getDefaultModules() {
     ],
     loaders: [
       {
+        test: /\.json$/,
+        loader: 'json'
+      },
+      {
+        test: /localforage/,
+        loader: 'exports?localforage'
+      },
+      {
         test: /\.css$/,
         loader: 'style-loader!css-loader'
       },
@@ -52,7 +60,8 @@ function getDefaultModules() {
         test: /\.(mp4|ogg|svg)$/,
         loader: 'file-loader'
       }
-    ]
+    ],
+    noParse: [ /localforage\/dist\/localforage.js/ ]
   };
 }
 
