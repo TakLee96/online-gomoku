@@ -13,14 +13,14 @@ var resolve = {
 
 function _outOfBound(i, j) {
   return i < 0 || i >= GRID_SIZE || j < 0 || j >= GRID_SIZE;
-};
+}
 
 function _countDirection(i, j, board, direction, player) {
   if (_outOfBound(i, j) || board[i][j] !== player)
     return 0;
   var next = resolve[direction](i, j);
   return 1 + _countDirection(next[0], next[1], board, direction, player);
-};
+}
 
 function _win(i, j, board) {
   var player = board[i][j];
@@ -33,7 +33,7 @@ function _win(i, j, board) {
   if (_countDirection(i, j, board, '^>', player) + _countDirection(i, j, board, '<v', player) - 1 === 5)
     return 4;
   return false;
-};
+}
 
 var _dir = [
   null,
