@@ -14,12 +14,12 @@ img {
   border: 1px solid yellow;
 }
 
-table {
+.board {
   border-collapse: collapse;
   border: 10px solid black;
 }
 
-td {
+.grid {
   padding: 0;
 }
 

@@ -13,9 +13,3 @@ skygear.config(config.skygear)
   }, (error) => {
     console.error(error);
   });
-
-window.onbeforeunload = function () {
-  if (skygear.currentUser) {
-    setStatus('offline', skygear.currentUser.id);
-  }
-};

@@ -52,11 +52,15 @@ export default class Board extends React.Component {
   }
   render () {
     var that = this;
-    return (<table><tbody>
-      { this._state._board.map((row, i) => (<tr key={i}>
-        { row.map((col, j) => <td key={i+'-'+j}><Grid i={i} j={j} player={col} play={that.play} ref={i+'-'+j} /></td>) }
-      </tr>)) }
-    </tbody></table>);
+    return (<table className="board">
+      <tbody>
+        { this._state._board.map((row, i) => (<tr key={i}>
+          { row.map((col, j) => (<td className="grid" key={i+'-'+j}>
+            <Grid i={i} j={j} player={col} play={that.play} ref={i+'-'+j} />
+          </td>)) }
+        </tr>)) }
+      </tbody>
+    </table>);
   }
   play (i, j, cb) {
     // being silly here
