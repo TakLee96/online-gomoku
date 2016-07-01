@@ -24,7 +24,8 @@ export default class App extends React.Component {
       game: false,
       updating: false,
       onlineUsers: [],
-      challenge: false
+      challenge: false,
+      timer: null
     };
     this.change = this.change.bind(this);
     this.goOnline = this.goOnline.bind(this);
@@ -80,9 +81,16 @@ export default class App extends React.Component {
           if (accept) {
             that.setState({ game: true });
           }
-        } else if (data.accept && that.state.challenge) {
-          alert(`${that.state.challenge.nickname} accepted your challenge.`);
-          that.setState({ game: true });
+        } else if (that.state.challenge) {
+          if (data.accept) {
+            alert(`${that.state.challenge.nickname} accepted your challenge.`);
+            clearTimeout(that.state.timer);
+            that.setState({ game: true, timer: null });
+          } else {
+            alert(`${that.state.challenge.nickname} refused your challenge.`);
+            clearTimeout(that.state.timer);
+            that.setState({ timer: null, challenge: false });
+          }
         }
       });
       this.refresh();
@@ -146,12 +154,15 @@ export default class App extends React.Component {
     });
   }
   challenge (user) {
-    // this.setState({ game: true });
     skygear.pubsub.publish(user._id, {
       challenge: true,
       nickname: user.nickname,
       id: skygear.currentUser.id
     });
-    this.setState({ challenge: user });
+    let timer = setTimeout(() => {
+      alert(`${this.state.challenge.nickname} might not be online.`)
+      this.setState({ challenge: false, timer: null });
+    }, 5000);
+    this.setState({ challenge: user, timer });
   }
 }
