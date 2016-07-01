@@ -65,6 +65,10 @@ export default class State {
   static BLACK = 1;
   static WHITE = 2;
 
+  static other (who) {
+    return 3 - who;
+  }
+
   constructor () {
     this._board = [];
     for (let i = 0; i < GRID_SIZE; i++) {

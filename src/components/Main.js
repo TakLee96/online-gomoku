@@ -38,7 +38,10 @@ export default class App extends React.Component {
   render() {
     if (skygear.currentUser) {
       if (this.state.game) {
-        return <Board />
+        return (<Board
+          myself={ {id: skygear.currentUser.id, nickname: this.state.myNickname} }
+          opponent={this.state.challenge}
+          player={(this.state.black) ? 1 : 2} />);
       } else {
         return (<div>
           <div>Welcome {this.state.myNickname}</div>
@@ -59,7 +62,9 @@ export default class App extends React.Component {
         <Input id='nickname' label='Nickname: ' type='text' update={this.change} />
         <Input id='password' label='Password: ' type='password' update={this.change} />
         <button onClick={this.login}>Log In</button>
-        <button onClick={this.signup}>Sign Up</button>
+        <button onClick={this.signup} disabled={
+          !(this.state.username && this.state.nickname && this.state.password)
+        }>Sign Up</button>
       </div>);
     }
   }
@@ -70,6 +75,7 @@ export default class App extends React.Component {
       setStatus('online', userid);
       getMyNickname(userid)
         .then((records) => {
+          console.log(records[0].nickname);
           this.setState({ myNickname: records[0].nickname });
         }, (error) => {
           console.error(error)
@@ -79,13 +85,13 @@ export default class App extends React.Component {
           let accept = confirm(`${data.nickname} challenges you. Accept?`);
           skygear.pubsub.publish(data.id, { accept });
           if (accept) {
-            that.setState({ game: true });
+            that.setState({ game: true, challenge: data, black: false });
           }
         } else if (that.state.challenge) {
           if (data.accept) {
             alert(`${that.state.challenge.nickname} accepted your challenge.`);
             clearTimeout(that.state.timer);
-            that.setState({ game: true, timer: null });
+            that.setState({ game: true, timer: null, black: true });
           } else {
             alert(`${that.state.challenge.nickname} refused your challenge.`);
             clearTimeout(that.state.timer);
@@ -97,11 +103,10 @@ export default class App extends React.Component {
     }
   }
   componentDidMount () {
-    const that = this;
     this.goOnline()
     skygear.onUserChanged((user) => {
       if (user) {
-        that.goOnline(user.id);
+        this.goOnline(user.id);
       }
     });
   }
@@ -156,13 +161,13 @@ export default class App extends React.Component {
   challenge (user) {
     skygear.pubsub.publish(user._id, {
       challenge: true,
-      nickname: user.nickname,
+      nickname: this.state.myNickname,
       id: skygear.currentUser.id
     });
     let timer = setTimeout(() => {
       alert(`${this.state.challenge.nickname} might not be online.`)
       this.setState({ challenge: false, timer: null });
     }, 5000);
-    this.setState({ challenge: user, timer });
+    this.setState({ challenge: { id: user._id, nickname: user.nickname }, timer });
   }
 }
