@@ -167,7 +167,7 @@ export default class App extends React.Component {
     let timer = setTimeout(() => {
       alert(`${this.state.challenge.nickname} might not be online.`)
       this.setState({ challenge: false, timer: null });
-    }, 5000);
+    }, 8000);
     this.setState({ challenge: { id: user._id, nickname: user.nickname }, timer });
   }
 }

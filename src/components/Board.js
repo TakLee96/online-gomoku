@@ -47,19 +47,20 @@ class Grid extends React.Component {
 
 export default class Board extends React.Component {
   static propTypes = {
-    myself: {
+    myself: React.PropTypes.shape({
       id: React.PropTypes.string.isRequired,
       nickname: React.PropTypes.string.isRequired
-    },
-    opponent: {
+    }),
+    opponent: React.PropTypes.shape({
       id: React.PropTypes.string.isRequired,
       nickname: React.PropTypes.string.isRequired
-    },
+    }),
     player: React.PropTypes.number.isRequired
   };
   constructor (props) {
     super(props);
     this.last = null;
+    this.state = { winner: null };
     this._state = new State();
     this.play = this.play.bind(this);
     this.updateDisplay = this.updateDisplay.bind(this);
@@ -74,7 +75,9 @@ export default class Board extends React.Component {
   render () {
     var that = this;
     return (<div>
-      <h3>{`${this.props.myself.nickname} vs ${this.props.opponent.nickname}`}</h3>
+      <h3>Blue: { (this.props.player === State.BLACK) ? this.props.myself.nickname : this.props.opponent.nickname }</h3>
+      <h3>Green: { (this.props.player === State.WHITE) ? this.props.myself.nickname : this.props.opponent.nickname }</h3>
+      <h3>{ (this.state.winner) ? `The winner is ${this.state.winner}` : '' }</h3>
       <table className="board">
         <tbody>
           { this._state._board.map((row, i) => (<tr key={i}>
@@ -104,6 +107,7 @@ export default class Board extends React.Component {
       this._state.highlight.forEach((pos) => {
         this.refs[pos[0]+'-'+pos[1]].highlight(2);
       });
+      this.setState({ winner: ((State.other(this._state.next) === State.BLACK) ? 'Blue' : 'Green') });
     }
   }
 }
