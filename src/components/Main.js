@@ -58,6 +58,7 @@ export default class App extends React.Component {
                 <th>Nickname</th>
                 <th>Status</th>
                 <th>Num Win</th>
+                <th>Num Lose</th>
                 <th>Last Online</th>
                 <th>Challenge</th>
               </tr>
@@ -66,7 +67,8 @@ export default class App extends React.Component {
               <tr>
                 <td><b>{this.state.myNickname}</b></td>
                 <td>online</td>
-                <td>{this.state.win}</td>
+                <td>{this.state.win || '0'}</td>
+                <td>{this.state.lose || '0'}</td>
                 <td>{(new Date()).toUTCString().slice(0, -4)}</td>
                 <td></td>
               </tr>
@@ -74,7 +76,8 @@ export default class App extends React.Component {
               <tr key={'ou'+i}>
                 <td>{user.nickname}</td>
                 <td>{user.status}</td>
-                <td>{user.win}</td>
+                <td>{user.win || '0'}</td>
+                <td>{user.lose || '0'}</td>
                 <td>{user.updatedAt.toUTCString().slice(0, -4)}</td>
                 <td><button onClick={ () => this.challenge(user) }
                   disabled={this.state.challenge}>Challenge</button></td>
@@ -130,7 +133,11 @@ export default class App extends React.Component {
       getProfile(userid)
         .then((records) => {
           console.log(records[0].nickname);
-          this.setState({ myNickname: records[0].nickname, win: records[0].win });
+          this.setState({
+            myNickname: records[0].nickname,
+            win: records[0].win,
+            lose: records[0].lose
+          });
         }, (error) => console.error(error));
       getAllHistory(userid).then((histories) => {
         console.log(histories);

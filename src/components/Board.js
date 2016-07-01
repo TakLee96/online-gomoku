@@ -92,9 +92,13 @@ export default class Board extends React.Component {
           opponent: this.props.opponent,
           isBlack: this.props.player === State.BLACK,
           win: State.other(this._state.next) === this.props.player
-        }).then(() => getProfile(this.props.myself.id))
-          .then((profiles) => setProfile({ win: profiles[0].win + 1 }, this.props.myself.id))
-          .then(() => {
+        }).then(() => {
+          return getProfile(this.props.myself.id)
+        }).then((profiles) => {
+          var win = State.other(this._state.next) === this.props.player;
+          var prop = (win) ? 'win' : 'lose';
+          return setProfile({ [ prop ]: (profiles[0][prop] || 0) + 1 }, this.props.myself.id)
+        }).then(() => {
             this.setState({ winner: ((State.other(this._state.next) === State.BLACK) ? 'Blue' : 'Green')});
           }, (error) => console.error(error));
       }
