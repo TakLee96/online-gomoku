@@ -2,6 +2,7 @@ import React from 'react';
 import State from '../libraries/state'
 
 import skygear from 'skygear';
+import { saveHistory } from '../libraries/util'
 
 const images = [
   require('../images/grid-empty.jpg'),
@@ -55,7 +56,8 @@ export default class Board extends React.Component {
       id: React.PropTypes.string.isRequired,
       nickname: React.PropTypes.string.isRequired
     }),
-    player: React.PropTypes.number.isRequired
+    player: React.PropTypes.number.isRequired,
+    exit: React.PropTypes.func.isRequired
   };
   constructor (props) {
     super(props);
@@ -63,6 +65,7 @@ export default class Board extends React.Component {
     this.state = { winner: null };
     this._state = new State();
     this.play = this.play.bind(this);
+    this.exit = this.exit.bind(this);
     this.updateDisplay = this.updateDisplay.bind(this);
   }
   componentDidMount () {
@@ -77,14 +80,17 @@ export default class Board extends React.Component {
     return (<div>
       <h3>Blue: { (this.props.player === State.BLACK) ? this.props.myself.nickname : this.props.opponent.nickname }</h3>
       <h3>Green: { (this.props.player === State.WHITE) ? this.props.myself.nickname : this.props.opponent.nickname }</h3>
-      <h3>{ (this.state.winner) ? `The winner is ${this.state.winner}` : '' }</h3>
+      <div>{ (this.state.winner) ? (<div>
+        <h3>{`The winner is ${this.state.winner}! History saved.`}</h3>
+        <button onClick={this.exit}>Back</button>
+      </div>) : '' }</div>
       <table className="board">
-        <tbody>
-          { this._state._board.map((row, i) => (<tr key={i}>
-            { row.map((col, j) => (<td className="grid" key={i+'-'+j}>
+        <tbody>{this._state._board.map((row, i) => (
+          <tr key={i}>{row.map((col, j) => (
+            <td className="grid" key={i+'-'+j}>
               <Grid i={i} j={j} player={col} play={that.play} ref={i+'-'+j} />
-            </td>)) }
-          </tr>)) }
+            </td>))}
+          </tr>))}
         </tbody>
       </table>
     </div>);
@@ -107,7 +113,17 @@ export default class Board extends React.Component {
       this._state.highlight.forEach((pos) => {
         this.refs[pos[0]+'-'+pos[1]].highlight(2);
       });
-      this.setState({ winner: ((State.other(this._state.next) === State.BLACK) ? 'Blue' : 'Green') });
+      saveHistory({
+        moves: this._state._history,
+        opponent: this.props.opponent,
+        isBlack: this.props.player === State.BLACK,
+        win: State.other(this._state.next) === this.props.player
+      }).then(() => {
+        this.setState({ winner: ((State.other(this._state.next) === State.BLACK) ? 'Blue' : 'Green') });
+      }, (error) => console.error(error));
     }
+  }
+  exit () {
+    return this.props.exit();
   }
 }

@@ -1,8 +1,19 @@
 import skygear from 'skygear';
 
 const User = skygear.Record.extend('user');
+const History = skygear.Record.extend('history');
 
-export function getMyNickname(userid) {
+export function getAllHistory(userid) {
+  var query = new skygear.Query(History);
+  query.equalTo('_created_by', userid);
+  return skygear.publicDB.query(query);
+}
+
+export function saveHistory(history) {
+  return skygear.publicDB.save(new History(history));
+}
+
+export function getNickname(userid) {
   var query = new skygear.Query(User);
   query.equalTo('_created_by', userid);
   return skygear.publicDB.query(query);
@@ -28,7 +39,7 @@ export function setStatus(status, userid) {
       record['status'] = status;
       return skygear.publicDB.save(record);
     }).then(() => {
-      console.log("status updated to", status);
+      console.log("status updated to: %o", status);
     }, (error) => {
       console.error(error)
     });
