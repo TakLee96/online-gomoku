@@ -3,7 +3,7 @@ import State from '../libraries/state'
 import Grid from './Grid';
 
 import skygear from 'skygear';
-import { saveHistory } from '../libraries/util'
+import { saveHistory, setProfile, getProfile } from '../libraries/util'
 
 export default class Board extends React.Component {
   static propTypes = {
@@ -52,20 +52,20 @@ export default class Board extends React.Component {
         <h3>{`The winner is ${this.state.winner}! History saved.`}</h3>
         <button onClick={this.exit}>Back</button>
       </div>) : '' }</div>
-      <table className="board">
+      <table className='board'>
         <tbody>{this._state._board.map((row, i) => (
-          <tr key={i}>{row.map((col, j) => (
-            <td className="grid" key={i+'-'+j}>
+          <tr className='grid' key={i}>{row.map((col, j) => (
+            <td className='grid' key={i+'-'+j}>
               <Grid i={i} j={j} player={col} play={that.play} ref={i+'-'+j} />
             </td>))}
           </tr>))}
         </tbody>
       </table>
-      <div>{ (this.props.history) ? (<div>
+      <h3>{ (this.props.history) ? (<div>
         <button onClick={this.backward} disabled={!this.state.canBackward}>&lt;</button>
         <button onClick={this.forward} disabled={!this.state.canForward}>&gt;</button>
         <button onClick={this.exit}>Back</button></div>) : ''}
-      </div>
+      </h3>
     </div>);
   }
   play (i, j, cb) {
@@ -92,9 +92,11 @@ export default class Board extends React.Component {
           opponent: this.props.opponent,
           isBlack: this.props.player === State.BLACK,
           win: State.other(this._state.next) === this.props.player
-        }).then(() => {
-          this.setState({ winner: ((State.other(this._state.next) === State.BLACK) ? 'Blue' : 'Green') });
-        }, (error) => console.error(error));
+        }).then(() => getProfile(this.props.myself.id))
+          .then((profiles) => setProfile({ win: profiles[0].win + 1 }, this.props.myself.id))
+          .then(() => {
+            this.setState({ winner: ((State.other(this._state.next) === State.BLACK) ? 'Blue' : 'Green')});
+          }, (error) => console.error(error));
       }
     }
   }

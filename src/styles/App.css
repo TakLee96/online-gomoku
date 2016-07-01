@@ -6,6 +6,22 @@ img {
   display: block;
 }
 
+table {
+  width: 790px;
+  margin: auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+}
+
 .red {
   border: 1px solid red;
 }
@@ -17,14 +33,17 @@ img {
 .board {
   border-collapse: collapse;
   border: 10px solid black;
+  text-align: center;
+  width: auto;
 }
 
 .grid {
+  border: 0;
   padding: 0;
 }
 
 body {
   text-align: center;
-  width: 600px;
+  width: 800px;
   margin: auto;
 }

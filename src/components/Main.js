@@ -9,8 +9,8 @@ import Input from './Input';
 import {
   setStatus,
   getUsersWithStatus,
-  setNickname,
-  getNickname,
+  setProfile,
+  getProfile,
   getAllHistory
 } from '../libraries/util';
 
@@ -28,7 +28,8 @@ export default class App extends React.Component {
       challenge: false,
       timer: null,
       histories: [],
-      history: null
+      history: null,
+      win: 0
     };
     this.change = this.change.bind(this);
     this.goOnline = this.goOnline.bind(this);
@@ -49,30 +50,61 @@ export default class App extends React.Component {
           player={(this.state.black) ? 1 : 2} />);
       } else {
         return (<div>
-          <div>Welcome {this.state.myNickname}</div>
-          <button onClick={this.logout}>Log Out</button>
+          <hr/>
           <h3>Current Online Users</h3>
           <table>
-            <tbody>{this.state.onlineUsers.map((user, i) => (
+            <thead>
+              <tr>
+                <th>Nickname</th>
+                <th>Status</th>
+                <th>Num Win</th>
+                <th>Last Online</th>
+                <th>Challenge</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>{this.state.myNickname}</b></td>
+                <td>online</td>
+                <td>{this.state.win}</td>
+                <td>{(new Date()).toUTCString().slice(0, -4)}</td>
+                <td></td>
+              </tr>
+              {this.state.onlineUsers.map((user, i) => (
               <tr key={'ou'+i}>
-                <td>{user._id}</td>
                 <td>{user.nickname}</td>
                 <td>{user.status}</td>
+                <td>{user.win}</td>
+                <td>{user.updatedAt.toUTCString().slice(0, -4)}</td>
                 <td><button onClick={ () => this.challenge(user) }
                   disabled={this.state.challenge}>Challenge</button></td>
               </tr>))}
             </tbody>
           </table>
-          <button onClick={this.refresh} disabled={this.state.updating}>Refresh</button>
+          <p>
+            <button onClick={this.logout}>Log Out</button>
+            <button onClick={this.refresh} disabled={this.state.updating}>Refresh</button>
+          </p>
+          <hr />
           <h3>Game History</h3>
           <table>
+            <thead>
+              <tr>
+                <th>Nickname</th>
+                <th>Match Result</th>
+                <th>Who First</th>
+                <th>Num Moves</th>
+                <th>Match Time</th>
+                <th>View</th>
+              </tr>
+            </thead>
             <tbody>{ this.state.histories.map((history, i) => (
               <tr key={'h'+i}>
                 <td>{history.opponent.nickname}</td>
                 <td>{(history.win) ? 'win' : 'lose'}</td>
                 <td>{(history.isBlack) ? 'blue' : 'green'}</td>
                 <td>{history.moves.length}</td>
-                <td>{history.createdAt.toString()}</td>
+                <td>{history.createdAt.toUTCString().slice(0, -4)}</td>
                 <td><button onClick={() => this.view(history)}>view</button></td>
               </tr>)) }
             </tbody>
@@ -92,14 +124,13 @@ export default class App extends React.Component {
     }
   }
   goOnline (userid) {
-    const that = this;
     userid = (skygear.currentUser) ? skygear.currentUser.id : userid;
     if (userid) {
       setStatus('online', userid);
-      getNickname(userid)
+      getProfile(userid)
         .then((records) => {
           console.log(records[0].nickname);
-          this.setState({ myNickname: records[0].nickname });
+          this.setState({ myNickname: records[0].nickname, win: records[0].win });
         }, (error) => console.error(error));
       getAllHistory(userid).then((histories) => {
         console.log(histories);
@@ -111,18 +142,18 @@ export default class App extends React.Component {
           skygear.pubsub.publish(data.id, { accept });
           if (accept) {
             setStatus('ingame', userid);
-            that.setState({ game: true, challenge: data, black: false });
+            this.setState({ game: true, challenge: data, black: false });
           }
-        } else if (that.state.challenge) {
+        } else if (this.state.challenge) {
           if (data.accept) {
-            alert(`${that.state.challenge.nickname} accepted your challenge.`);
-            clearTimeout(that.state.timer);
+            alert(`${this.state.challenge.nickname} accepted your challenge.`);
+            clearTimeout(this.state.timer);
             setStatus('ingame', userid);
-            that.setState({ game: true, timer: null, black: true });
+            this.setState({ game: true, timer: null, black: true });
           } else {
-            alert(`${that.state.challenge.nickname} refused your challenge.`);
-            clearTimeout(that.state.timer);
-            that.setState({ timer: null, challenge: false });
+            alert(`${this.state.challenge.nickname} refused your challenge.`);
+            clearTimeout(this.state.timer);
+            this.setState({ timer: null, challenge: false });
           }
         }
       });
@@ -141,44 +172,44 @@ export default class App extends React.Component {
     this.setState({ ['' + id]: value });
   }
   login () {
-    const that = this;
     skygear.loginWithUsername(this.state.username, this.state.password)
       .then((user) => {
-        return setNickname()
         console.log('login success');
-        that.setState({ user: user });
+        return getProfile(user.id);
+      }).then((profiles) => {
+        this.setState({ myNickname: profiles[0].nickname });
       }, (error) => {
         console.error(error);
         alert(error.error.message);
       });
   }
   signup () {
-    const that = this;
     skygear.signupWithUsername(this.state.username, this.state.password)
-      .then((user) => setNickname(that.state.nickname, user.id))
+      .then((user) => setProfile({
+        nickname: this.state.nickname,
+        win: 0
+      }, user.id))
       .then((record) => {
         console.log('signup success');
-        that.setState({ user: skygear.currentUser });
+        this.setState({ myNickname: this.state.nickname });
       }, (error) => {
         console.error(error);
         alert(error.error.message);
       });
   }
   logout () {
-    const that = this;
     setStatus('offline', skygear.currentUser.id)
       .then(() => {
         return skygear.logout();
       }).then(() => {
-        that.forceUpdate();
+        this.forceUpdate();
       }, (error) => console.error(error));
   }
   refresh (event) {
-    const that = this;
     const id = skygear.currentUser.id;
     this.setState({ updating: true })
     getUsersWithStatus('online', id).then((onlineUsers) => {
-      that.setState({ onlineUsers, updating: false });
+      this.setState({ onlineUsers, updating: false });
     }, (error) => console.error(error));
   }
   challenge (user) {

@@ -5,6 +5,10 @@ const images = [
   require('../images/grid-blue.jpg'),
   require('../images/grid-green.jpg')
 ];
+images.forEach((src) => {
+  var image = new Image();
+  image.src = src;
+}); // image preloading
 
 export default class Grid extends React.Component {
   static propTypes = {

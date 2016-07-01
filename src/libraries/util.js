@@ -6,6 +6,7 @@ const History = skygear.Record.extend('history');
 export function getAllHistory(userid) {
   var query = new skygear.Query(History);
   query.equalTo('_created_by', userid);
+  query.addDescending('_created_at');
   return skygear.publicDB.query(query);
 }
 
@@ -13,19 +14,19 @@ export function saveHistory(history) {
   return skygear.publicDB.save(new History(history));
 }
 
-export function getNickname(userid) {
+export function getProfile(userid) {
   var query = new skygear.Query(User);
   query.equalTo('_created_by', userid);
   return skygear.publicDB.query(query);
 }
 
-export function setNickname(nickname, userid) {
+export function setProfile(config, userid) {
   var query = new skygear.Query(User);
   query.equalTo('_created_by', userid);
   return skygear.publicDB.query(query)
     .then((records) => {
       var record = records[0];
-      record['nickname'] = nickname;
+      Object.assign(record, config);
       return skygear.publicDB.save(record);
     });
 }
@@ -49,5 +50,6 @@ export function getUsersWithStatus(status, userid) {
   var query = new skygear.Query(User);
   query.equalTo('status', status);
   query.notEqualTo('_created_by', userid);
+  query.addDescending('_updated_at');
   return skygear.publicDB.query(query);
 }
