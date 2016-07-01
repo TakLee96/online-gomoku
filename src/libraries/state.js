@@ -79,6 +79,7 @@ export default class State {
     }
     this._history = [];
     this._win = false;
+    this.highlight = null;
   }
 
   get next () {
@@ -118,5 +119,14 @@ export default class State {
     if (this._win) {
       this.highlight = _build(this.last, this._win, this._board);
     }
+  }
+
+  rewind () {
+    var [i, j] = this._history.pop();
+    this._win = false;
+    this._board[i][j] = State.EMPTY;
+    var highlight = this.highlight;
+    this.highlight = null;
+    return [i, j, highlight];
   }
 }

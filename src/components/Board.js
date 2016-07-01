@@ -1,50 +1,9 @@
 import React from 'react';
 import State from '../libraries/state'
+import Grid from './Grid';
 
 import skygear from 'skygear';
 import { saveHistory } from '../libraries/util'
-
-const images = [
-  require('../images/grid-empty.jpg'),
-  require('../images/grid-blue.jpg'),
-  require('../images/grid-green.jpg')
-];
-
-class Grid extends React.Component {
-  static propTypes = {
-    i: React.PropTypes.number.isRequired,
-    j: React.PropTypes.number.isRequired,
-    player: React.PropTypes.number.isRequired,
-    play: React.PropTypes.func.isRequired
-  };
-  static highlight = [ '', 'red', 'yellow'  ]
-  constructor (props) {
-    super(props);
-    this.i = props.i;
-    this.j = props.j;
-    this.player = props.player;
-    this.play = props.play;
-    this.state = { player: this.player, on: false };
-    this.update = this.update.bind(this);
-    this.highlight = this.highlight.bind(this);
-  }
-  componentWillReceiveProps (nextProps) {
-    this.setState({ player: nextProps.player });
-  }
-  render () {
-    return <img height="40" width="40"
-      src={images[this.state.player]}
-      onClick={this.update} className={Grid.highlight[this.state.on]} />;
-  }
-  update () {
-    this.play(this.i, this.j, (player) => {
-      this.setState({ player });
-    });
-  }
-  highlight (on) {
-    this.setState({ on });
-  }
-}
 
 export default class Board extends React.Component {
   static propTypes = {
@@ -52,28 +11,37 @@ export default class Board extends React.Component {
       id: React.PropTypes.string.isRequired,
       nickname: React.PropTypes.string.isRequired
     }),
-    opponent: React.PropTypes.shape({
-      id: React.PropTypes.string.isRequired,
-      nickname: React.PropTypes.string.isRequired
-    }),
+    // opponent: React.PropTypes.shape({
+    //   id: React.PropTypes.string,
+    //   nickname: React.PropTypes.string
+    // }),
     player: React.PropTypes.number.isRequired,
-    exit: React.PropTypes.func.isRequired
+    exit: React.PropTypes.func.isRequired,
+    history: React.PropTypes.object
   };
   constructor (props) {
     super(props);
     this.last = null;
-    this.state = { winner: null };
+    this.state = { winner: null, canBackward: false, canForward: true };
+    this.index = 0;
     this._state = new State();
     this.play = this.play.bind(this);
     this.exit = this.exit.bind(this);
     this.updateDisplay = this.updateDisplay.bind(this);
+    this.rewindDisplay = this.rewindDisplay.bind(this);
+    this.canBackward = this.canBackward.bind(this);
+    this.canForward = this.canForward.bind(this);
+    this.backward = this.backward.bind(this);
+    this.forward = this.forward.bind(this);
   }
   componentDidMount () {
     skygear.off(this.props.myself.id);
-    skygear.on('game-'+this.props.myself.id, (data) => {
-      this.updateDisplay(data.i, data.j);
-      this.refs[data.i+'-'+data.j].setState({ player: State.other(this.props.player) });
-    });
+    if (!this.props.history) {
+      skygear.on('game-'+this.props.myself.id, (data) => {
+        this.updateDisplay(data.i, data.j);
+        this.refs[data.i+'-'+data.j].setState({ player: State.other(this.props.player) });
+      });
+    }
   }
   render () {
     var that = this;
@@ -93,10 +61,15 @@ export default class Board extends React.Component {
           </tr>))}
         </tbody>
       </table>
+      <div>{ (this.props.history) ? (<div>
+        <button onClick={this.backward} disabled={!this.state.canBackward}>&lt;</button>
+        <button onClick={this.forward} disabled={!this.state.canForward}>&gt;</button>
+        <button onClick={this.exit}>Back</button></div>) : ''}
+      </div>
     </div>);
   }
   play (i, j, cb) {
-    if (this._state.canMove(i, j, this.props.player)) {
+    if (!this.props.history && this._state.canMove(i, j, this.props.player)) {
       this.updateDisplay(i, j);
       cb(this._state.get(i, j));
       skygear.pubsub.publish('game-'+this.props.opponent.id, { i, j });
@@ -113,17 +86,54 @@ export default class Board extends React.Component {
       this._state.highlight.forEach((pos) => {
         this.refs[pos[0]+'-'+pos[1]].highlight(2);
       });
-      saveHistory({
-        moves: this._state._history,
-        opponent: this.props.opponent,
-        isBlack: this.props.player === State.BLACK,
-        win: State.other(this._state.next) === this.props.player
-      }).then(() => {
-        this.setState({ winner: ((State.other(this._state.next) === State.BLACK) ? 'Blue' : 'Green') });
-      }, (error) => console.error(error));
+      if (!this.props.history) {
+        saveHistory({
+          moves: this._state._history,
+          opponent: this.props.opponent,
+          isBlack: this.props.player === State.BLACK,
+          win: State.other(this._state.next) === this.props.player
+        }).then(() => {
+          this.setState({ winner: ((State.other(this._state.next) === State.BLACK) ? 'Blue' : 'Green') });
+        }, (error) => console.error(error));
+      }
+    }
+  }
+  rewindDisplay () {
+    var [i, j, highlight] = this._state.rewind();
+    this.refs[i+'-'+j].setState({ player: State.EMPTY });
+    if (highlight) {
+      highlight.forEach((pos) => {
+        this.refs[pos[0]+'-'+pos[1]].highlight(0);
+      });
+    }
+    this.refs[this.last[0]+'-'+this.last[1]].highlight(0);
+    if (this.canBackward()) {
+      this.last = this._state.last;
+      this.refs[this.last[0]+'-'+this.last[1]].highlight(1);
     }
   }
   exit () {
     return this.props.exit();
+  }
+  canBackward () {
+    return this.index > 0;
+  }
+  canForward () {
+    return this.index < this.props.history.moves.length;
+  }
+  backward () {
+    if (this.canBackward()) {
+      this.index -= 1;
+      this.rewindDisplay();
+    }
+    this.setState({ canBackward: this.canBackward(), canForward: this.canForward() });
+  }
+  forward () {
+    if (this.canForward()) {
+      var [i, j] = this.props.history.moves[this.index];
+      this.updateDisplay(i, j);
+      this.index += 1;
+    }
+    this.setState({ canBackward: this.canBackward(), canForward: this.canForward() });
   }
 }
