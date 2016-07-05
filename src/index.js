@@ -5,7 +5,6 @@ import App from './components/Main';
 
 import skygear from 'skygear';
 import config from 'config';
-import { setStatus } from './libraries/util';
 
 skygear.config(config.skygear)
   .then(() => {

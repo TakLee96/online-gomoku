@@ -46,7 +46,7 @@ export default class App extends React.Component {
       if (this.state.game) {
         return (<Board exit={this.exit} history={this.state.history}
           myself={ {id: skygear.currentUser.id, nickname: this.state.myNickname} }
-          opponent={this.state.challenge}
+          opponent={ this.state.challenge || this.state.history.opponent }
           player={(this.state.black) ? 1 : 2} />);
       } else {
         return (<div>
