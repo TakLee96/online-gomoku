@@ -1,0 +1,3 @@
+[submodule "alpha_gomoku"]
+	path = alpha_gomoku
+	url = git@github.com:TakLee96/alpha_gomoku.git

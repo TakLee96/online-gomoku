@@ -54,7 +54,7 @@ export default class App extends React.Component {
   render() {
     if (skygear.currentUser) {
       if (this.state.ai) {
-        return (<div style="border: 10px solid black;" dangerouslySetInnerHTML={this.java()}></div>);
+        return (<div dangerouslySetInnerHTML={this.java()}></div>);
       } else if (this.state.game) {
         return (<Board exit={this.exit} history={this.state.history}
           myself={ {id: skygear.currentUser.id, nickname: this.state.myNickname} }

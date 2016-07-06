@@ -47,3 +47,7 @@ body {
   width: 800px;
   margin: auto;
 }
+
+applet {
+  border: 10px solid black;
+}
