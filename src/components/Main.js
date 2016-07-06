@@ -18,18 +18,20 @@ export default class App extends React.Component {
   constructor () {
     super();
     this.state = {
-      username: '',
-      password: '',
-      nickname: '',
-      myNickname: 'loading',
-      game: false,
-      updating: false,
-      onlineUsers: [],
-      challenge: false,
-      timer: null,
-      histories: [],
-      history: null,
-      win: 0
+      username: '', // username input
+      password: '', // password input
+      nickname: '', // nickname input
+      updating: false, // is loading online users?
+
+      myNickname: 'loading', // my nickname
+      win: 0, // my win number
+      onlineUsers: [], // current online users
+      histories: [], // my histories
+
+      history: null, // selected history of my histories
+      game: false, // show the gomoku board?
+      challenge: false, // do we have a challenger?
+      timer: null // timer for waiting reply`
     };
     this.change = this.change.bind(this);
     this.goOnline = this.goOnline.bind(this);
@@ -40,10 +42,20 @@ export default class App extends React.Component {
     this.challenge = this.challenge.bind(this);
     this.exit = this.exit.bind(this);
     this.view = this.view.bind(this);
+    this.challengeAI = this.challengeAI.bind(this);
+  }
+  java() {
+    var html = `<applet code="gomoku.Main.class" width="750" height="750">
+                  <div>Please enable Java in your browser.</div>
+                  <param name="cache_option" value="no">
+                </applet>`;
+    return { __html: html };
   }
   render() {
     if (skygear.currentUser) {
-      if (this.state.game) {
+      if (this.state.ai) {
+        return (<div style="border: 10px solid black;" dangerouslySetInnerHTML={this.java()}></div>);
+      } else if (this.state.game) {
         return (<Board exit={this.exit} history={this.state.history}
           myself={ {id: skygear.currentUser.id, nickname: this.state.myNickname} }
           opponent={ this.state.challenge || this.state.history.opponent }
@@ -71,6 +83,14 @@ export default class App extends React.Component {
                 <td>{this.state.lose || '0'}</td>
                 <td>{(new Date()).toUTCString().slice(0, -4)}</td>
                 <td></td>
+              </tr>
+              <tr>
+                <td>AI</td>
+                <td>local</td>
+                <td>0</td>
+                <td>0</td>
+                <td>anytime</td>
+                <td><button onClick={ this.challengeAI }>Challenge</button></td>
               </tr>
               {this.state.onlineUsers.map((user, i) => (
               <tr key={'ou'+i}>
@@ -239,5 +259,8 @@ export default class App extends React.Component {
   view (history) {
     setStatus('view', skygear.currentUser.id);
     this.setState({ game: true, history });
+  }
+  challengeAI () {
+    this.setState({ ai: true });
   }
 }
