@@ -16,9 +16,11 @@ import skygear from 'skygear';
 import config from 'config';
 
 class Container extends React.Component {
-  render() {
-    return <div>{this.props.children}</div>;
-  }
+  render() { return <div>{this.props.children}</div>; }
+}
+
+class Empty extends React.Component {
+  render() { return <div>404</div>; }
 }
 
 const app = (<Router history={hashHistory}>
@@ -30,12 +32,11 @@ const app = (<Router history={hashHistory}>
     <Route path="java" component={Java}></Route>
     <Route path="game/:gameId" component={Game}></Route>
     <Route path="history/:historyId" component={History}></Route>
-    <Redirect from="*" to="home"></Redirect>
+    <Route path="*" component={Empty}></Route>
   </Route>
 </Router>);
 
 skygear.config(config.skygear).then(() => {
-  window.skygear = skygear;
   render(app, document.getElementById('app'));
 }, (error) => {
   console.error(error);

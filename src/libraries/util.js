@@ -71,14 +71,15 @@ export function login(username, password) {
   return skygear.loginWithUsername(username, password);
 }
 
-export function signup(username, nickname, password) {
+export function signup(username, nickname, password, file) {
   return skygear.signupWithUsername(username, password)
     .then((user) => setProfile({
       nickname: nickname,
       status: 'online',
       win: 0,
       lose: 0,
-      unfinished: 0
+      unfinished: 0,
+      avatar: new skygear.Asset({ name: 'avatar', file })
     }, user.id));
 }
 

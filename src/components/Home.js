@@ -23,7 +23,8 @@ export default class Home extends React.Component {
         lose: 'loading',
         status: 'loading',
         nickname: 'loading',
-        unfinished: 'loading'
+        unfinished: 'loading',
+        avatar: { url: '' }
       },
       games: [],
       users: [],
@@ -44,7 +45,7 @@ export default class Home extends React.Component {
   }
 
   componentDidMount() {
-    if (!online()) this.props.router.push('/');
+    if (!online()) return this.props.router.push('/');
 
     setStatus('online');
     getProfile().then((profiles) => {
@@ -65,7 +66,7 @@ export default class Home extends React.Component {
   routerWillLeave(nextLocation) {
     var pathname = nextLocation.pathname;
     if (['/login', '/signup', '/'].includes(pathname)) {
-      return false;
+      return !online();
     }
     if (pathname === '/java') {
       setStatus('ingame');
@@ -112,15 +113,19 @@ export default class Home extends React.Component {
     }
   }
   challengeAccepted(data) {
-    alert(`${this.state.challenging.nickname} accepted your challenge.`);
-    clearTimeout(this.state.timer);
-    postChallenge(data._id, { confirm: true, nickname: this.state.profile.nickname });
-    this.game(data);
+    if (this.state.challenging) {
+      alert(`${this.state.challenging.nickname} accepted your challenge.`);
+      clearTimeout(this.state.timer);
+      postChallenge(data._id, { confirm: true, nickname: this.state.profile.nickname });
+      this.game(data);
+    }
   }
-  challengeRefused() {
-    alert(`${this.state.challenging.nickname} refused your challenge.`);
-    clearTimeout(this.state.timer);
-    this.setStatus({ challenging: false });
+  challengeRefused(data) {
+    if (this.state.challenging && this.state.challenging._id === data._id) {
+      alert(`${this.state.challenging.nickname} refused your challenge.`);
+      clearTimeout(this.state.timer);
+      this.setState({ challenging: false });
+    }
   }
   challengeConfirmed(data) {
     clearTimeout(this.state.timer);
@@ -155,6 +160,7 @@ export default class Home extends React.Component {
       <table>
         <thead>
           <tr>
+            <th>Avatar</th>
             <th>Nickname</th>
             <th>Status</th>
             <th>#Win</th>
@@ -166,6 +172,7 @@ export default class Home extends React.Component {
         </thead>
         <tbody>
           <tr>
+            <td><img src={this.state.profile.avatar.url} alt="loading" className="avatar" /></td>
             <td><b>{this.state.profile.nickname}</b></td>
             <td>online</td>
             <td>{this.state.profile.win}</td>
@@ -175,6 +182,7 @@ export default class Home extends React.Component {
             <td></td>
           </tr>
           <tr>
+            <td><img src="http://d3gnp09177mxuh.cloudfront.net/tech-page-images/java.png" alt="loading" className="avatar" /></td>
             <td>Tak's AI</td>
             <td>local</td>
             <td></td>
@@ -185,13 +193,14 @@ export default class Home extends React.Component {
           </tr>
           {this.state.users.map((user, i) => (
           <tr key={'ou'+i}>
+            <td><img src={user.avatar.url} alt="loading" className="avatar" /></td>
             <td>{user.nickname}</td>
             <td>{user.status}</td>
             <td>{user.win}</td>
             <td>{user.lose}</td>
             <td>{user.unfinished}</td>
             <td>{user.updatedAt.toUTCString().slice(0, -4)}</td>
-            <td><button onClick={ () => this.challenge(user) }>Challenge</button></td>
+            <td><button onClick={ () => this.challenge(user) } disabled={this.state.challenging}>Challenge</button></td>
           </tr>))}
         </tbody>
       </table>
