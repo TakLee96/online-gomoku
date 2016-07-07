@@ -129,4 +129,10 @@ export default class State {
     this.highlight = null;
     return [i, j, highlight];
   }
+
+  winner () {
+    if (this.isWin)
+      return State.other(this.next);
+    return State.EMPTY;
+  }
 }

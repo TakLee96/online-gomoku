@@ -4,8 +4,7 @@ export default class Input extends React.Component {
   static propTypes = {
     id: React.PropTypes.string.isRequired,
     label: React.PropTypes.string.isRequired,
-    type: React.PropTypes.string.isRequired,
-    update: React.PropTypes.func.isRequired
+    type: React.PropTypes.string.isRequired
   };
   constructor (props) {
     super(props);
@@ -21,6 +20,5 @@ export default class Input extends React.Component {
   }
   update (event) {
     this.setState({ value: event.target.value });
-    this.props.update(this.props.id, event.target.value);
   }
 }

@@ -1,32 +1,33 @@
 import React from 'react';
+import { Link } from 'react-router';
+
 import State from '../libraries/state'
 import Grid from './Grid';
 
-import skygear from 'skygear';
-import { saveHistory, setProfile, getProfile } from '../libraries/util'
-
 export default class Board extends React.Component {
   static propTypes = {
-    myself: React.PropTypes.shape({
-      id: React.PropTypes.string.isRequired,
-      nickname: React.PropTypes.string.isRequired
-    }),
-    // opponent: React.PropTypes.shape({
-    //   id: React.PropTypes.string,
-    //   nickname: React.PropTypes.string
-    // }),
-    player: React.PropTypes.number.isRequired,
-    exit: React.PropTypes.func.isRequired,
-    history: React.PropTypes.object
+    blue: React.PropTypes.string.isRequired,
+    green: React.PropTypes.string.isRequired,
+    report: React.PropTypes.func,
+    end: React.PropTypes.func,
+    history: React.PropTypes.array
   };
+
   constructor (props) {
     super(props);
-    this.last = null;
-    this.state = { winner: null, canBackward: false, canForward: true };
-    this.index = 0;
+    this.state = {
+      blue: props.blue,
+      green: props.green,
+      canBackward: false,
+      canForward: false
+    };
     this._state = new State();
+    this.index = 0;
+    this.last = null;
+    this.player = State.EMPTY;
+
     this.play = this.play.bind(this);
-    this.exit = this.exit.bind(this);
+    this.respond = this.respond.bind(this);
     this.updateDisplay = this.updateDisplay.bind(this);
     this.rewindDisplay = this.rewindDisplay.bind(this);
     this.canBackward = this.canBackward.bind(this);
@@ -34,46 +35,50 @@ export default class Board extends React.Component {
     this.backward = this.backward.bind(this);
     this.forward = this.forward.bind(this);
   }
-  componentDidMount () {
-    skygear.off(this.props.myself.id);
-    if (!this.props.history) {
-      skygear.on('game-'+this.props.myself.id, (data) => {
-        this.updateDisplay(data.i, data.j);
-        this.refs[data.i+'-'+data.j].setState({ player: State.other(this.props.player) });
-      });
-    }
+
+  componentWillReceiveProps(props) {
+    this.setState({
+      blue: props.blue,
+      green: props.green,
+      canForward: true
+    });
+    this.player = (props.isBlue) ? State.BLACK : State.WHITE;
   }
+
   render () {
-    var that = this;
     return (<div>
-      <h3>Blue: { (this.props.player === State.BLACK) ? this.props.myself.nickname : this.props.opponent.nickname }</h3>
-      <h3>Green: { (this.props.player === State.WHITE) ? this.props.myself.nickname : this.props.opponent.nickname }</h3>
-      <div>{ (this.state.winner) ? (<div>
+      <h2>Blue: {this.state.blue}</h2>
+      <h2>Green: {this.state.green}</h2>
+      <div>{ (this.state.winner && !this.props.moves) ? (<div>
         <h3>{`The winner is ${this.state.winner}! History saved.`}</h3>
-        <button onClick={this.exit}>Back</button>
+        <Link to='/home'>Home</Link>
       </div>) : '' }</div>
       <table className='board'>
         <tbody>{this._state._board.map((row, i) => (
           <tr className='grid' key={i}>{row.map((col, j) => (
             <td className='grid' key={i+'-'+j}>
-              <Grid i={i} j={j} player={col} play={that.play} ref={i+'-'+j} />
+              <Grid i={i} j={j} player={col} play={this.play} ref={i+'-'+j} />
             </td>))}
           </tr>))}
         </tbody>
       </table>
-      <h3>{ (this.props.history) ? (<div>
+      <h3>{ (this.props.moves) ? (<div>
         <button onClick={this.backward} disabled={!this.state.canBackward}>&lt;</button>
         <button onClick={this.forward} disabled={!this.state.canForward}>&gt;</button>
-        <button onClick={this.exit}>Back</button></div>) : ''}
+        <Link to='/home'>Home</Link></div>) : ''}
       </h3>
     </div>);
   }
   play (i, j, cb) {
-    if (!this.props.history && this._state.canMove(i, j, this.props.player)) {
+    if (!this.props.moves && this._state.canMove(i, j, this.player)) {
       this.updateDisplay(i, j);
       cb(this._state.get(i, j));
-      skygear.pubsub.publish('game-'+this.props.opponent.id, { i, j });
+      this.props.report(i, j);
     }
+  }
+  respond(i, j) {
+    this.updateDisplay(i, j);
+    this.refs[i+'-'+j].setState({ player: this._state.get(i, j) });
   }
   updateDisplay (i, j) {
     if (this.last !== null) {
@@ -86,22 +91,15 @@ export default class Board extends React.Component {
       this._state.highlight.forEach((pos) => {
         this.refs[pos[0]+'-'+pos[1]].highlight(2);
       });
-      if (!this.props.history) {
-        saveHistory({
-          moves: this._state._history,
-          opponent: this.props.opponent,
-          isBlack: this.props.player === State.BLACK,
-          win: State.other(this._state.next) === this.props.player
-        }).then(() => {
-          return getProfile(this.props.myself.id)
-        }).then((profiles) => {
-          var win = State.other(this._state.next) === this.props.player;
-          var prop = (win) ? 'win' : 'lose';
-          return setProfile({ [ prop ]: (profiles[0][prop] || 0) + 1 }, this.props.myself.id)
-        }).then(() => {
-            this.setState({ winner: ((State.other(this._state.next) === State.BLACK) ? 'Blue' : 'Green')});
-          }, (error) => console.error(error));
-      }
+      var name = {
+        [State.EMPTY]: 'None',
+        [State.BLACK]: 'Blue',
+        [State.WHITE]: 'Green'
+      };
+      if (this.props.end)
+        this.props.end(this._state).then(() => {
+          this.setState({ winner: name[this._state.winner()] });
+        }, (error) => console.error(error));
     }
   }
   rewindDisplay () {
@@ -118,14 +116,11 @@ export default class Board extends React.Component {
       this.refs[this.last[0]+'-'+this.last[1]].highlight(1);
     }
   }
-  exit () {
-    return this.props.exit();
-  }
   canBackward () {
     return this.index > 0;
   }
   canForward () {
-    return this.index < this.props.history.moves.length;
+    return this.index < this.props.moves.length;
   }
   backward () {
     if (this.canBackward()) {
@@ -136,7 +131,7 @@ export default class Board extends React.Component {
   }
   forward () {
     if (this.canForward()) {
-      var [i, j] = this.props.history.moves[this.index];
+      var [i, j] = this.props.moves[this.index];
       this.updateDisplay(i, j);
       this.index += 1;
     }

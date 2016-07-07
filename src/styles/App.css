@@ -18,7 +18,7 @@ table, th, td {
 }
 
 th, td {
-    padding: 15px;
+    padding: 12px;
     text-align: left;
 }
 
@@ -48,6 +48,6 @@ body {
   margin: auto;
 }
 
-applet {
+.java {
   border: 10px solid black;
 }

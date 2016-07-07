@@ -17,7 +17,7 @@ export default class Grid extends React.Component {
     player: React.PropTypes.number.isRequired,
     play: React.PropTypes.func.isRequired
   };
-  static highlight = [ '', 'red', 'yellow'  ]
+  static highlight = [ '', 'red', 'yellow' ];
   constructor (props) {
     super(props);
     this.i = props.i;
