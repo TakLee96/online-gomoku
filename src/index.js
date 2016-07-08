@@ -4,7 +4,7 @@ import 'core-js/fn/string/includes';
 
 import React from 'react';
 import { render } from 'react-dom';
-import { Router, Route, IndexRoute, Redirect, hashHistory, withRouter } from 'react-router';
+import { Router, Route, IndexRoute, hashHistory, withRouter } from 'react-router';
 
 import { App, LogIn, SignUp } from './components/Main';
 import Home from './components/Home';

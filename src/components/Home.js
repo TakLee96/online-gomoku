@@ -32,6 +32,7 @@ export default class Home extends React.Component {
       challenging: false,
       timer: null
     };
+    this.defaultImageURL = "https://crunchbase-production-res.cloudinary.com/image/upload/c_pad,h_140,w_140/v1398245600/rr1njzmn7pdha7z5av4r.png";
     this.routerWillLeave = this.routerWillLeave.bind(this);
     this.challengeAI = this.challengeAI.bind(this);
     this.challenge = this.challenge.bind(this);
@@ -153,6 +154,11 @@ export default class Home extends React.Component {
     }, (error) => console.error(error));
   }
 
+  safeURL(avatar) {
+    if (avatar) return avatar.url;
+    return false;
+  }
+
   render() {
     return (<div>
       <hr/>
@@ -172,7 +178,7 @@ export default class Home extends React.Component {
         </thead>
         <tbody>
           <tr>
-            <td><img src={this.state.profile.avatar.url} alt="loading" className="avatar" /></td>
+            <td><img src={this.safeURL(this.state.profile.avatar) || this.defaultImageURL} alt="loading" className="avatar" /></td>
             <td><b>{this.state.profile.nickname}</b></td>
             <td>online</td>
             <td>{this.state.profile.win}</td>
@@ -193,7 +199,7 @@ export default class Home extends React.Component {
           </tr>
           {this.state.users.map((user, i) => (
           <tr key={'ou'+i}>
-            <td><img src={user.avatar.url} alt="loading" className="avatar" /></td>
+            <td><img src={this.safeURL(user.avatar) || this.defaultImageURL} alt="loading" className="avatar" /></td>
             <td>{user.nickname}</td>
             <td>{user.status}</td>
             <td>{user.win}</td>

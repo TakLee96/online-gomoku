@@ -77,7 +77,7 @@ export class SignUp extends React.Component {
     const username = this.refs['username'].state.value;
     const nickname = this.refs['nickname'].state.value;
     const password = this.refs['password'].state.value;
-    if (username && nickname && password && this.state.file) {
+    if (username && nickname && password && this.state.file.name) {
       signup(username, nickname, password, this.state.file)
         .then(() => this.props.router.push('/home'), (error) => {
           console.error(error); alert(error.error.message);
