@@ -15,27 +15,6 @@ import History from './components/History';
 import skygear from 'skygear';
 import config from 'config';
 
-class Container extends React.Component {
-  render() { return <div>{this.props.children}</div>; }
-}
-
-class Empty extends React.Component {
-  render() { return <div>404</div>; }
-}
-
-const app = (<Router history={hashHistory}>
-  <Route path="/" component={Container}>
-    <IndexRoute component={withRouter(App)}></IndexRoute>
-    <Route path="login" component={withRouter(LogIn)}></Route>
-    <Route path="signup" component={withRouter(SignUp)}></Route>
-    <Route path="home" component={withRouter(Home)}></Route>
-    <Route path="java" component={Java}></Route>
-    <Route path="game/:gameId" component={Game}></Route>
-    <Route path="history/:historyId" component={History}></Route>
-    <Route path="*" component={Empty}></Route>
-  </Route>
-</Router>);
-
 skygear.config(config.skygear).then(() => {
   if (window) {
     window.skygear = skygear;
@@ -43,7 +22,36 @@ skygear.config(config.skygear).then(() => {
     console.error('window is not defined');
   }
   console.log('skygear is configured');
-  render(app, document.getElementById('app'));
+
+  class Container extends React.Component {
+    componentDidMount() {
+      skygear.onUserChanged((user) => {
+        if (!user) {
+          this.props.router.push('/');
+        } else {
+          this.props.router.push('/home');
+        }
+      });
+    }
+    render() { return <div>{this.props.children}</div>; }
+  }
+
+  class Empty extends React.Component {
+    render() { return <div>404</div>; }
+  }
+
+  render((<Router history={hashHistory}>
+    <Route path="/" component={withRouter(Container)}>
+      <IndexRoute component={withRouter(App)}></IndexRoute>
+      <Route path="login" component={withRouter(LogIn)}></Route>
+      <Route path="signup" component={withRouter(SignUp)}></Route>
+      <Route path="home" component={withRouter(Home)}></Route>
+      <Route path="java" component={Java}></Route>
+      <Route path="game/:gameId" component={Game}></Route>
+      <Route path="history/:historyId" component={History}></Route>
+      <Route path="*" component={Empty}></Route>
+    </Route>
+  </Router>), document.getElementById('app'));
 }, (error) => {
   console.error(error);
 });

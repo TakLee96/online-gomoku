@@ -25,15 +25,6 @@ export default class Board extends React.Component {
     this.index = 0;
     this.last = null;
     this.player = State.EMPTY;
-
-    this.play = this.play.bind(this);
-    this.respond = this.respond.bind(this);
-    this.updateDisplay = this.updateDisplay.bind(this);
-    this.rewindDisplay = this.rewindDisplay.bind(this);
-    this.canBackward = this.canBackward.bind(this);
-    this.canForward = this.canForward.bind(this);
-    this.backward = this.backward.bind(this);
-    this.forward = this.forward.bind(this);
   }
 
   componentWillReceiveProps(props) {
@@ -69,18 +60,19 @@ export default class Board extends React.Component {
       </h3>
     </div>);
   }
-  play (i, j, cb) {
+
+  play = (i, j, cb) => {
     if (!this.props.moves && this._state.canMove(i, j, this.player)) {
       this.updateDisplay(i, j);
       cb(this._state.get(i, j));
       this.props.report(i, j);
     }
-  }
-  respond(i, j) {
+  };
+  respond = (i, j) => {
     this.updateDisplay(i, j);
     this.refs[i+'-'+j].setState({ player: this._state.get(i, j) });
-  }
-  updateDisplay (i, j) {
+  };
+  updateDisplay = (i, j) => {
     if (this.last !== null) {
       this.refs[this.last[0]+'-'+this.last[1]].highlight(0);
     }
@@ -101,8 +93,8 @@ export default class Board extends React.Component {
           this.setState({ winner: name[this._state.winner()] });
         }, (error) => console.error(error));
     }
-  }
-  rewindDisplay () {
+  };
+  rewindDisplay = () => {
     var [i, j, highlight] = this._state.rewind();
     this.refs[i+'-'+j].setState({ player: State.EMPTY });
     if (highlight) {
@@ -115,26 +107,26 @@ export default class Board extends React.Component {
       this.last = this._state.last;
       this.refs[this.last[0]+'-'+this.last[1]].highlight(1);
     }
-  }
-  canBackward () {
+  };
+  canBackward = () => {
     return this.index > 0;
-  }
-  canForward () {
+  };
+  canForward = () => {
     return this.index < this.props.moves.length;
-  }
-  backward () {
+  };
+  backward = () => {
     if (this.canBackward()) {
       this.index -= 1;
       this.rewindDisplay();
     }
     this.setState({ canBackward: this.canBackward(), canForward: this.canForward() });
-  }
-  forward () {
+  };
+  forward = () => {
     if (this.canForward()) {
       var [i, j] = this.props.moves[this.index];
       this.updateDisplay(i, j);
       this.index += 1;
     }
     this.setState({ canBackward: this.canBackward(), canForward: this.canForward() });
-  }
+  };
 }

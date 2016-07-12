@@ -16,8 +16,6 @@ export default class Game extends React.Component {
         }
       }
     };
-    this.report = this.report.bind(this);
-    this.end = this.end.bind(this);
   }
 
   componentDidMount() {
@@ -34,11 +32,11 @@ export default class Game extends React.Component {
                   isBlue={ this.state.game.isBlue } />;
   }
 
-  report(i, j) {
+  report = (i, j) => {
     reportMove(i, j, this.state.game.opponentId);
-  }
+  };
 
-  end(state) {
+  end = (state) => {
     return saveHistory(this.props.params['gameId'], state);
-  }
+  };
 }

@@ -28,23 +28,21 @@ export default class Grid extends React.Component {
     this.player = props.player;
     this.play = props.play;
     this.state = { player: this.player, on: false };
-    this.update = this.update.bind(this);
-    this.highlight = this.highlight.bind(this);
   }
   componentWillReceiveProps (nextProps) {
     this.setState({ player: nextProps.player });
   }
   render () {
     return <img height="40" width="40"
-      src={images[this.state.player]}
+      src={images[this.state.player]} className="box"
       onClick={this.update} className={Grid.highlight[this.state.on]} />;
   }
-  update () {
+  update = () => {
     this.play(this.i, this.j, (player) => {
       this.setState({ player });
     });
-  }
-  highlight (on) {
+  };
+  highlight = (on) => {
     this.setState({ on });
-  }
+  };
 }

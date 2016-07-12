@@ -15,6 +15,7 @@ export default class Java extends React.Component {
       <p><Link to="/home">Home</Link></p>
       <div className="java" dangerouslySetInnerHTML={ this.getJava() }></div>
       <p>Please also trust this website for using Java. If you are using MacOS, go to Settings->Java->Security and add the url of the current website to the trusted website list. Thank you!</p>
+      <img src="https://s32.postimg.org/vp0trz3xh/boom.png" alt="details" />
     </div>)
   }
 }

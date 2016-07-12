@@ -27,7 +27,6 @@ export class App extends React.Component {
 export class LogIn extends React.Component {
   constructor (props) {
     super(props);
-    this.onClick = this.onClick.bind(this);
     this.state = { loading: false };
   }
   componentDidMount() {
@@ -41,20 +40,22 @@ export class LogIn extends React.Component {
       <button onClick={this.onClick} disabled={this.state.loading}>Log In</button>
     </div>);
   }
-  onClick() {
+  onClick = () => {
     this.setState({ loading: true });
     login(this.refs['username'].state.value, this.refs['password'].state.value)
-      .then(() => this.props.router.push('/home'), (error) => {
-        console.error(error); alert(error.error.message); this.setState({ loading: false });
+      .then(() => {
+        console.log('log in success');
+      }, (error) => {
+        console.error(error);
+        alert(error.error.message);
+        this.setState({ loading: false });
       });
-  }
+  };
 }
 
 export class SignUp extends React.Component {
   constructor (props) {
     super(props);
-    this.onClick = this.onClick.bind(this);
-    this.onDrop = this.onDrop.bind(this);
     this.state = { file: {}, loading: false }
   }
   componentDidMount() {
@@ -72,21 +73,25 @@ export class SignUp extends React.Component {
       <button onClick={this.onClick} disabled={this.state.loading}>{(this.state.loading) ? 'Uploading' : 'Sign Up'}</button>
     </div>);
   }
-  onDrop(files) {
+  onDrop = (files) => {
     this.setState({ file: files[0] });
-  }
-  onClick() {
+  };
+  onClick = () => {
     const username = this.refs['username'].state.value;
     const nickname = this.refs['nickname'].state.value;
     const password = this.refs['password'].state.value;
     if (username && nickname && password && this.state.file.name) {
       this.setState({ loading: true });
       signup(username, nickname, password, this.state.file)
-        .then(() => this.props.router.push('/home'), (error) => {
-          console.error(error); alert(error.error.message); this.setState({ loading: false });
+        .then(() => {
+          console.log('sign up success');
+        }, (error) => {
+          console.error(error);
+          alert(error.error.message);
+          this.setState({ loading: false });
         });
     } else {
       alert('Missing required fields');
     }
-  }
+  };
 }

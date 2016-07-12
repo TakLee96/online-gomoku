@@ -1,18 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 
-import {
-  setStatus,
-  getProfile,
-  online,
-  getGames,
-  waitChallenge,
-  postChallenge,
-  getUsers,
-  logoutUser,
-  terminateWaitChallenge,
-  saveGameAndHistory
-} from '../libraries/util';
+import * as util from '../libraries/util';
 
 export default class Home extends React.Component {
   constructor(props) {
@@ -32,61 +21,51 @@ export default class Home extends React.Component {
       challenging: false,
       timer: null
     };
-    this.defaultImageURL = "https://crunchbase-production-res.cloudinary.com/image/upload/c_pad,h_140,w_140/v1398245600/rr1njzmn7pdha7z5av4r.png";
-    this.routerWillLeave = this.routerWillLeave.bind(this);
-    this.challengeAI = this.challengeAI.bind(this);
-    this.challenge = this.challenge.bind(this);
-    this.challengeReceived = this.challengeReceived.bind(this);
-    this.challengeAccepted = this.challengeAccepted.bind(this);
-    this.challengeRefused = this.challengeRefused.bind(this);
-    this.challengeConfirmed = this.challengeConfirmed.bind(this);
-    this.game = this.game.bind(this);
-    this.logout = this.logout.bind(this);
-    this.refresh = this.refresh.bind(this);
+    this.defaultImageURL = 'https://crunchbase-production-res.cloudinary.com/image/upload/c_pad,h_140,w_140/v1398245600/rr1njzmn7pdha7z5av4r.png';
   }
 
   componentDidMount() {
-    if (!online()) return this.props.router.push('/');
+    if (!util.online()) return this.props.router.push('/');
 
-    setStatus('online');
-    getProfile().then((profiles) => {
+    util.setStatus('online');
+    util.getProfile().then((profiles) => {
       this.setState({ profile: profiles[0] });
     }, (error) => console.error(error));
-    getGames().then((games) => {
+    util.getGames().then((games) => {
       this.setState({ games });
     }, (error) => console.error(error));
-    getUsers().then((users) => {
+    util.getUsers().then((users) => {
       this.setState({ users });
     }, (error) => console.error(error));
-    waitChallenge(this.challengeReceived, this.challengeAccepted,
+    util.waitChallenge(this.challengeReceived, this.challengeAccepted,
                   this.challengeRefused, this.challengeConfirmed);
 
     this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave);
   }
 
-  routerWillLeave(nextLocation) {
+  routerWillLeave = (nextLocation) => {
     var pathname = nextLocation.pathname;
     if (['/login', '/signup', '/'].includes(pathname)) {
-      return !online();
+      return !util.online();
     }
     if (pathname === '/java') {
-      setStatus('ingame');
+      util.setStatus('ingame');
     } else if (pathname.includes('history')) {
-      setStatus('history');
+      util.setStatus('history');
     } else if (pathname.includes('game')) {
-      setStatus('ingame');
+      util.setStatus('ingame');
     } else {
       console.log('unrecognized location:', nextLocation);
     }
     return true;
-  }
+  };
 
-  challengeAI() {
+  challengeAI = () => {
     this.props.router.push('/java');
-  }
+  };
 
-  challenge(user) {
-    postChallenge(user._id, {
+  challenge = (user) => {
+    util.postChallenge(user._id, {
       challenge: true,
       nickname: this.state.profile.nickname
     });
@@ -94,8 +73,8 @@ export default class Home extends React.Component {
       alert(`${user.nickname} seems not to be online...`);
       this.setState({ challenging: false });
     }, 8000) });
-  }
-  challengeReceived(data) {
+  };
+  challengeReceived = (data) => {
     if (!this.state.challenging) {
       let late = false;
       let timer = setTimeout(() => {
@@ -109,55 +88,55 @@ export default class Home extends React.Component {
           alert(`${data.nickname} didn't receive your reply :(`);
           this.setState({ challenging: false });
         }, 4000) });
-        postChallenge(data._id, { accept, nickname: this.state.profile.nickname });
+        util.postChallenge(data._id, { accept, nickname: this.state.profile.nickname });
       }
     }
-  }
-  challengeAccepted(data) {
+  };
+  challengeAccepted = (data) => {
     if (this.state.challenging) {
       alert(`${this.state.challenging.nickname} accepted your challenge.`);
       clearTimeout(this.state.timer);
-      postChallenge(data._id, { confirm: true, nickname: this.state.profile.nickname });
+      util.postChallenge(data._id, { confirm: true, nickname: this.state.profile.nickname });
       this.game(data);
     }
-  }
-  challengeRefused(data) {
+  };
+  challengeRefused = (data) => {
     if (this.state.challenging && this.state.challenging._id === data._id) {
       alert(`${this.state.challenging.nickname} refused your challenge.`);
       clearTimeout(this.state.timer);
       this.setState({ challenging: false });
     }
-  }
-  challengeConfirmed(data) {
+  };
+  challengeConfirmed = (data) => {
     clearTimeout(this.state.timer);
     this.game(data);
-  }
+  };
 
-  game(data) {
-    terminateWaitChallenge();
-    saveGameAndHistory(data, this.state.profile.nickname).then((result) => {
+  game = (data) => {
+    util.terminateWaitChallenge();
+    util.saveGameAndHistory(data, this.state.profile.nickname).then((result) => {
       if (result.errors[0] || result.errors[1]) console.error(result.errors);
       this.props.router.push(`/game/${result.savedRecords[1]._id}`);
     }, (error) => console.error(error));
-  }
+  };
 
-  logout() {
-    logoutUser().then(() => {
-      this.props.router.push('/');
+  logout = () => {
+    util.logoutUser().then(() => {
+      console.log('log out success');
     });
-  }
+  };
 
-  refresh() {
+  refresh = () => {
     this.setState({ refreshing: true });
-    getUsers().then((users) => {
+    util.getUsers().then((users) => {
       this.setState({ users, refreshing: false });
     }, (error) => console.error(error));
-  }
+  };
 
-  safeURL(avatar) {
+  safeURL = (avatar) => {
     if (avatar) return avatar.url;
     return false;
-  }
+  };
 
   render() {
     return (<div>

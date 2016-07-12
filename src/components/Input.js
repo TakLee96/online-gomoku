@@ -9,7 +9,6 @@ export default class Input extends React.Component {
   constructor (props) {
     super(props);
     this.state = { value: '' };
-    this.update = this.update.bind(this);
   }
   render () {
     return (<div>
@@ -18,7 +17,7 @@ export default class Input extends React.Component {
              onInput={this.update} value={this.state.value}/>
     </div>);
   }
-  update (event) {
+  update = (event) => {
     this.setState({ value: event.target.value });
-  }
+  };
 }
