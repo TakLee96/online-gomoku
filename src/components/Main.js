@@ -28,6 +28,7 @@ export class LogIn extends React.Component {
   constructor (props) {
     super(props);
     this.onClick = this.onClick.bind(this);
+    this.state = { loading: false };
   }
   componentDidMount() {
     if (online()) this.props.router.push('/home');
@@ -37,13 +38,14 @@ export class LogIn extends React.Component {
       <Link to="/signup">Sign Up</Link>
       <Input ref='username' id='username' label='Username: ' type='text' />
       <Input ref='password' id='password' label='Password: ' type='password' />
-      <button onClick={this.onClick}>Log In</button>
+      <button onClick={this.onClick} disabled={this.state.loading}>Log In</button>
     </div>);
   }
   onClick() {
+    this.setState({ loading: true });
     login(this.refs['username'].state.value, this.refs['password'].state.value)
       .then(() => this.props.router.push('/home'), (error) => {
-        console.error(error); alert(error.error.message);
+        console.error(error); alert(error.error.message); this.setState({ loading: false });
       });
   }
 }

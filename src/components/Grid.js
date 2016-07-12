@@ -1,9 +1,12 @@
 import React from 'react';
 
+// TODO: how can I fix this
+var e = require('../images/grid-empty.jpg');
+var b = require('../images/grid-blue.jpg');
+var g = require('../images/grid-green.jpg');
+
 const images = [
-  require('../images/grid-empty.jpg'),
-  require('../images/grid-blue.jpg'),
-  require('../images/grid-green.jpg')
+  e.slice(1), b.slice(1), g.slice(1)
 ];
 images.forEach((src) => {
   var image = new Image();

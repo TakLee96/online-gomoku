@@ -37,10 +37,11 @@ const app = (<Router history={hashHistory}>
 </Router>);
 
 skygear.config(config.skygear).then(() => {
-  if (window)
+  if (window) {
     window.skygear = skygear;
-  else
+  } else {
     console.error('window is not defined');
+  }
   console.log('skygear is configured');
   render(app, document.getElementById('app'));
 }, (error) => {
