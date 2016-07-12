@@ -53,7 +53,7 @@ export class SignUp extends React.Component {
     super(props);
     this.onClick = this.onClick.bind(this);
     this.onDrop = this.onDrop.bind(this);
-    this.state = { file: {} }
+    this.state = { file: {}, loading: false }
   }
   componentDidMount() {
     if (online()) this.props.router.push('/home');
@@ -67,7 +67,7 @@ export class SignUp extends React.Component {
       <DropZone id="dropZone" onDrop={this.onDrop} multiple={false} accept="image/*">
         <div>{this.state.file.name || 'Drop your avatar image here, or click to select.'}</div>
       </DropZone>
-      <button onClick={this.onClick}>Sign Up</button>
+      <button onClick={this.onClick} disabled={this.state.loading}>{(this.state.loading) ? 'Uploading' : 'Sign Up'}</button>
     </div>);
   }
   onDrop(files) {
@@ -78,9 +78,10 @@ export class SignUp extends React.Component {
     const nickname = this.refs['nickname'].state.value;
     const password = this.refs['password'].state.value;
     if (username && nickname && password && this.state.file.name) {
+      this.setState({ loading: true });
       signup(username, nickname, password, this.state.file)
         .then(() => this.props.router.push('/home'), (error) => {
-          console.error(error); alert(error.error.message);
+          console.error(error); alert(error.error.message); this.setState({ loading: false });
         });
     } else {
       alert('Missing required fields');
