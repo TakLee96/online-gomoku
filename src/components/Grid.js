@@ -20,21 +20,21 @@ export default class Grid extends React.Component {
     player: React.PropTypes.number.isRequired,
     play: React.PropTypes.func.isRequired
   };
-  static highlight = [ '', 'red', 'yellow' ];
+  static highlight = [ 'box', 'box red', 'box yellow' ];
   constructor (props) {
     super(props);
     this.i = props.i;
     this.j = props.j;
     this.player = props.player;
     this.play = props.play;
-    this.state = { player: this.player, on: false };
+    this.state = { player: this.player, on: 0 };
   }
   componentWillReceiveProps (nextProps) {
     this.setState({ player: nextProps.player });
   }
   render () {
     return <img height="40" width="40"
-      src={images[this.state.player]} className="box"
+      src={images[this.state.player]}
       onClick={this.update} className={Grid.highlight[this.state.on]} />;
   }
   update = () => {

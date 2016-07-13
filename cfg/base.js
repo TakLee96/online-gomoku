@@ -39,8 +39,8 @@ module.exports = {
     'localStorage': 'undefined', // we don't need this package
     'config': JSON.stringify({
       'skygear': {
-        'endPoint': 'https://gomoku.skygeario.com/',
-        'apiKey': '37605245dbe14eebbb2378666fa864c9'
+        'endPoint': 'https://taktest.staging.skygeario.com/',
+        'apiKey': 'c55ad35e6d644e559e139723817dcb85'
       },
       'GRID_SIZE': 15
     }) // it's better to save configuration for your skygear container here
